@@ -1,0 +1,7 @@
+.DS_Store
+data/
+runs/
+checkpoint/
+__pycache__/
+GEMINI.md
+AGENTS.md

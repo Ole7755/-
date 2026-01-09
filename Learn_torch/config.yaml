@@ -1,0 +1,28 @@
+# YAML文件写法基本规则
+# 1. 缩进表示层级关系
+# 使用空格缩进,同级元素缩进相同,子级元素多缩进（通常 2 或 4 个空格）
+# 2. 健值对
+# 键: 值
+# name: 张三
+# age: 25
+# city: 北京
+# 冒号后面一定要有一个空格
+project_name: "RMB_Classification"
+
+data: 
+ root_dir: "data/RMB_split"
+ train_batch_size: 10
+ valid_batch_size: 10
+ num_workers: 0
+
+model: 
+ name: "LeNet"
+ num_classes: 2
+
+train: 
+ max_epoch: 4
+ lr: 0.01
+ momentum: 0.9
+ seed: 42
+ log_interval: 2
+ val_interval: 2
