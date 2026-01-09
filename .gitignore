@@ -1,7 +1,14 @@
-.*
 data/
 runs/
 checkpoint/
 __pycache__/
 GEMINI.md
 AGENTS.md
+.DS_Store
+.AppleDouble
+.LSOverride
+*.swp
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
