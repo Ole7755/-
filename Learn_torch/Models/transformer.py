@@ -15,6 +15,7 @@ class TransformerConfig:
         d_ff=2048,
         dropout=0.1,
         max_len=5000,
+        pad_idx=0,
     ):
         """
 
@@ -35,6 +36,7 @@ class TransformerConfig:
         self.d_ff = d_ff
         self.dropout = dropout
         self.max_len = max_len
+        self.pad_idx = pad_idx
 
 
 class PositionalEncoding(nn.Module):
@@ -199,3 +201,153 @@ class EncoderLayer(nn.Module):
         x = x + self.dropout(ff_output)
 
         return x
+
+
+class Encoder(nn.Module):
+    def __init__(self, config: TransformerConfig):
+        super().__init__()
+        self.d_model = config.d_model
+        self.embedding = nn.Embedding(config.src_vocab_size, config.d_model)
+        self.pos_encoder = PositionalEncoding(
+            config.d_model, config.dropout, config.max_len
+        )
+        self.layers = nn.ModuleList(
+            [
+                EncoderLayer(config.d_model, config.n_head, config.d_ff, config.dropout)
+                for _ in range(config.num_layers)
+            ]
+        )
+        self.norm = nn.LayerNorm(config.d_model)
+
+    def forward(self, src, src_mask):
+        x = self.embedding(src) * math.sqrt(self.d_model)
+        x = self.pos_encoder(x)
+        for layer in self.layers:
+            x = layer(x, src_mask)
+        x = self.norm(x)
+        return x
+
+
+class DecoderLayer(nn.Module):
+    def __init__(self, d_model, n_head, d_ff, dropout):
+        super().__init__()
+        self.self_attn = MultiHeadAttention(d_model=d_model, n_heads=n_head)
+        self.cross_attn = MultiHeadAttention(d_model=d_model, n_heads=n_head)
+        self.feed_forward = PositionwiseFeedForward(
+            d_model=d_model, d_ff=d_ff, dropout=dropout
+        )
+        self.norm1 = nn.LayerNorm(d_model)
+        self.norm2 = nn.LayerNorm(d_model)
+        self.norm3 = nn.LayerNorm(d_model)
+        self.dropout = nn.Dropout(p=dropout)
+
+    def forward(self, tgt, memory, tgt_mask, memory_mask):
+        # Block 1: Masked Self-Attention
+        tgt2 = self.norm1(tgt)
+        tgt2, _ = self.self_attn(tgt2, tgt2, tgt2, tgt_mask)
+        tgt = tgt + self.dropout(tgt2)
+
+        # Block 2: Cross-Attention
+        tgt2 = self.norm2(tgt)
+        tgt2, _ = self.cross_attn(tgt2, memory, memory, memory_mask)
+        tgt = tgt + self.dropout(tgt2)
+
+        # Block 3: Feed-Forward
+        tgt2 = self.norm3(tgt)
+        tgt2 = self.feed_forward(tgt2)
+        tgt = tgt + self.dropout(tgt2)
+
+        return tgt
+
+
+class Decoder(nn.Module):
+    def __init__(self, config: TransformerConfig):
+        super().__init__()
+        self.d_model = config.d_model
+        self.embedding = nn.Embedding(config.tgt_vocab_size, config.d_model)
+        self.pos_encoder = PositionalEncoding(
+            config.d_model, config.dropout, config.max_len
+        )
+        self.layers = nn.ModuleList(
+            [
+                DecoderLayer(config.d_model, config.n_head, config.d_ff, config.dropout)
+                for _ in range(config.num_layers)
+            ]
+        )
+        self.norm = nn.LayerNorm(config.d_model)
+        self.fc_out = nn.Linear(config.d_model, config.tgt_vocab_size)
+
+    def forward(self, tgt, memory, tgt_mask, memory_mask):
+        x = self.embedding(tgt) * math.sqrt(self.d_model)
+        x = self.pos_encoder(x)
+        for layer in self.layers:
+            x = layer(x, memory, tgt_mask, memory_mask)
+        x = self.norm(x)
+        out = self.fc_out(x)
+        return out
+
+
+class Transformer(nn.Module):
+    def __init__(self, config: TransformerConfig):
+        super().__init__()
+        self.encoder = Encoder(config=config)
+        self.decoder = Decoder(config=config)
+        self.src_pad_idx = config.pad_idx
+        self.tgt_pad_idx = config.pad_idx
+
+    def make_src_mask(self, src):
+        # src shape: (batch_size, src_len)
+        # result shape: (batch_size, 1, 1, src_len)
+        # 假设 0 是 pad_idx
+        pad_idx = self.src_pad_idx
+        src_mask = (src != pad_idx).unsqueeze(1).unsqueeze(2)
+        return src_mask
+
+    def make_tgt_mask(self, tgt):
+        pad_idx = self.tgt_pad_idx
+        N, tgt_len = tgt.shape
+
+        padding_mask = (tgt != pad_idx).unsqueeze(1).unsqueeze(2)
+        subsequent_mask = torch.tril(
+            torch.ones((tgt_len, tgt_len), device=tgt.device)
+        ).bool()
+        tgt_mask = padding_mask & subsequent_mask
+
+        return tgt_mask
+
+    def forward(self, src, tgt):
+        src_mask = self.make_src_mask(src)
+        tgt_mask = self.make_tgt_mask(tgt)
+        encoder_output = self.encoder(src, src_mask)
+        output = self.decoder(tgt, encoder_output, tgt_mask, src_mask)
+        return output
+
+
+if __name__ == "__main__":
+    src_vocab_size = 100
+    tgt_vocab_size = 100
+
+    config = TransformerConfig(
+        src_vocab_size=src_vocab_size,
+        tgt_vocab_size=tgt_vocab_size,
+        d_model=128,  # 缩小维度加快速度
+        n_head=8,
+        num_layers=2,  # 层数减小
+        d_ff=512,
+        dropout=0.1,
+    )
+    model = Transformer(config)
+    src = torch.randint(1, src_vocab_size, (2, 10))
+    tgt = torch.randint(1, tgt_vocab_size, (2, 12))
+    src[0, -3:] = 0
+    tgt[1, -2:] = 0
+    try:
+        output = model(src, tgt)
+        print("\n--- Test Results ---")
+        print(f"Input tgt shape: {tgt.shape}")
+        print(f"Output shape   : {output.shape}")
+        loss = output.mean()
+        loss.backward()
+        print("✅ Gradient/Backward Pass Passed!")
+    except Exception as e:
+        print(f"❌ Error during forward pass: {e}")
