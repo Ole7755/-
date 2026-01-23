@@ -1,0 +1,25 @@
+chapters:
+  - id: movement
+    title: 移动
+    description: 光标移动与导航。
+    order: 1
+  - id: editing
+    title: 编辑
+    description: 基础插入、删除与修改操作。
+    order: 2
+  - id: text-objects
+    title: 文本对象
+    description: 以语义单位（单词、括号等）进行编辑。
+    order: 3
+  - id: search-replace
+    title: 搜索替换
+    description: 高效定位与批量修改。
+    order: 4
+  - id: macros
+    title: 宏
+    description: 录制并重复编辑操作。
+    order: 5
+  - id: mixed
+    title: 综合
+    description: 跨主题综合练习。
+    order: 6
