@@ -1,0 +1,98 @@
+:root {
+  font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+  color: #1b1b1b;
+  background: #f7f5f2;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #f7f5f2;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 1px solid #e0dbd5;
+  background: #fff7ee;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 20px;
+}
+
+header .actions {
+  display: flex;
+  gap: 8px;
+}
+
+button {
+  border: 1px solid #d6cfc7;
+  background: #ffffff;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #f6efe8;
+}
+
+main {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: calc(100vh - 64px);
+}
+
+aside {
+  border-right: 1px solid #e0dbd5;
+  background: #fff;
+  padding: 16px;
+}
+
+.section-title {
+  font-weight: 600;
+  margin: 16px 0 8px;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.list button {
+  text-align: left;
+}
+
+.content {
+  padding: 24px;
+  display: grid;
+  gap: 16px;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid #e0dbd5;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.editor {
+  min-height: 200px;
+  border: 1px dashed #d6cfc7;
+  border-radius: 8px;
+  padding: 12px;
+  background: #fffdf9;
+}
+
+.muted {
+  color: #6b625a;
+  font-size: 14px;
+}

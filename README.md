@@ -1,4 +1,4 @@
-# Vim 学习（暂定名）
+# VimDojo
 
 这是一个面向 Vim 新手的本地优先开源刷题平台，体验类似 LeetCode：题库 + 难度分级 + 引导式提示 + 文本结果判定。无需服务器，离线可用。
 
@@ -23,9 +23,17 @@
 - `content/` YAML 内容（章节、题目、成就）
 - `design/` 信息架构、流程、线框
 - `meta/` 项目文案与常见问题
+- `src/` 前端源码
+- `scripts/` 内容构建脚本
+- `index.html` 入口页面
+- `vite.config.cjs` 构建配置
+- `package.json` 前端依赖与脚本
 
 ## 内容格式
 内容使用 YAML 维护，详见 `docs/content-spec.md`。
+
+## 技术选型
+详见 `docs/tech-stack.md`。
 
 ## 路线图
 详见 `docs/roadmap.md`。
